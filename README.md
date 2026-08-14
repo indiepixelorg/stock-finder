@@ -35,6 +35,8 @@ The visual direction is calm and editorial: dark navy typography, a light backgr
 
 Each edition should make the selection process visible and explainable:
 
+The `universe.csv` input is sourced from the [S&P 500 Companies dataset](https://github.com/datasets/s-and-p-500-companies/tree/main).
+
 ```text
 S&P 500 universe
         ↓
