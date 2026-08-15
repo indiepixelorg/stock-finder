@@ -6,7 +6,8 @@ The script keeps one output row per security in universe.csv. Financial values
 come from the SEC's standard XBRL Company Facts API; TTM flow values are
 calculated locally from annual and year-to-date filing facts. Price and market
 capitalization are intentionally not included because they are not provided by
-Company Facts.
+Company Facts. The annual history columns use slots 0 through 4, where slot 0
+is the most recent annual filing and slot 4 is the fifth most recent.
 
 Usage:
 
@@ -39,6 +40,25 @@ DEFAULT_WORKERS = 4
 MAX_WORKERS = 8
 DEFAULT_TIMEOUT_SECONDS = 30
 DEFAULT_RETRIES = 3
+HISTORY_SLOTS = 5
+
+ANNUAL_HISTORY_FIELDS = (
+    [f"annual_period_end_{slot}" for slot in range(HISTORY_SLOTS)]
+    + [f"annual_filing_date_{slot}" for slot in range(HISTORY_SLOTS)]
+    + [
+        f"{metric}_fy{slot}"
+        for metric in (
+            "revenue",
+            "operating_income",
+            "net_income",
+            "operating_cash_flow",
+            "capital_expenditures",
+            "free_cash_flow",
+            "diluted_eps",
+        )
+        for slot in range(HISTORY_SLOTS)
+    ]
+)
 
 OUTPUT_FIELDS = [
     "ticker",
@@ -63,8 +83,7 @@ OUTPUT_FIELDS = [
     "period_end",
     "data_source",
     "source_url",
-    "error",
-]
+] + ANNUAL_HISTORY_FIELDS + ["error"]
 
 FLOW_FACTS: dict[str, tuple[str, ...]] = {
     "revenue_ttm": (
@@ -316,6 +335,44 @@ def fact_entries(
     return []
 
 
+def fact_entries_all_tags(
+    company_facts: dict[str, Any],
+    taxonomy: str,
+    tags: Iterable[str],
+    preferred_units: Iterable[str],
+) -> list[dict[str, Any]]:
+    """Collect facts from every candidate tag for historical fallback coverage."""
+    taxonomy_facts = company_facts.get("facts", {}).get(taxonomy, {})
+    if not isinstance(taxonomy_facts, dict):
+        return []
+
+    preferred_units = tuple(preferred_units)
+    entries: list[dict[str, Any]] = []
+    for tag in tags:
+        definition = taxonomy_facts.get(tag)
+        if not isinstance(definition, dict):
+            continue
+        units = definition.get("units", {})
+        if not isinstance(units, dict):
+            continue
+
+        unit_names = [unit for unit in preferred_units if unit in units]
+        unit_names.extend(unit for unit in units if unit not in unit_names)
+        for unit in unit_names:
+            values = units.get(unit)
+            if not isinstance(values, list):
+                continue
+            usable = [
+                {**entry, "_unit": unit, "_tag": tag}
+                for entry in values
+                if isinstance(entry, dict) and as_float(entry.get("val")) is not None
+            ]
+            if usable:
+                entries.extend(usable)
+                break
+    return entries
+
+
 def filing_sort_key(entry: dict[str, Any]) -> tuple[date, date, str]:
     filed = parse_date(entry.get("filed")) or date.min
     end = parse_date(entry.get("end")) or date.min
@@ -331,7 +388,7 @@ def latest_instant(entries: list[dict[str, Any]]) -> tuple[float | None, dict[st
 
 def deduplicate_periods(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Keep the latest filing for each reporting period."""
-    selected: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    selected: dict[tuple[str, str, str], dict[str, Any]] = {}
     for entry in entries:
         key = entry_key(entry)
         previous = selected.get(key)
@@ -465,6 +522,39 @@ def ttm_flow(entries: list[dict[str, Any]]) -> tuple[float | None, dict[str, Any
     return None, latest
 
 
+def annual_history(
+    entries: list[dict[str, Any]], slots: int = HISTORY_SLOTS
+) -> list[dict[str, Any]]:
+    """Return the most recent annual filing facts, newest first."""
+    annual_entries = [
+        entry
+        for entry in entries
+        if entry.get("form") in {"10-K", "20-F"}
+        and duration_days(entry) >= 300
+        and parse_date(entry.get("end"))
+    ]
+    by_period_end: dict[date, dict[str, Any]] = {}
+    for entry in annual_entries:
+        period_end = parse_date(entry.get("end"))
+        if not period_end:
+            continue
+        previous = by_period_end.get(period_end)
+        entry_rank = (duration_days(entry), filing_sort_key(entry))
+        previous_rank = (
+            (duration_days(previous), filing_sort_key(previous))
+            if previous
+            else None
+        )
+        if previous is None or entry_rank > previous_rank:
+            by_period_end[period_end] = entry
+
+    return sorted(
+        by_period_end.values(),
+        key=lambda entry: parse_date(entry.get("end")) or date.min,
+        reverse=True,
+    )[:slots]
+
+
 def selected_fact(
     company_facts: dict[str, Any],
     taxonomy: str,
@@ -483,9 +573,46 @@ def selected_ttm_fact(
     return ttm_flow(entries)
 
 
+def selected_annual_fact_history(
+    company_facts: dict[str, Any],
+    tags: Iterable[str],
+    units: Iterable[str],
+) -> list[dict[str, Any]]:
+    entries = fact_entries_all_tags(company_facts, "us-gaap", tags, units)
+    return annual_history(entries)
+
+
 def build_financials(company_facts: dict[str, Any]) -> dict[str, Any]:
     values: dict[str, Any] = {}
     evidence: list[dict[str, Any]] = []
+    annual_histories: dict[str, list[dict[str, Any]]] = {}
+    annual_periods: set[date] = set()
+
+    # Build one shared set of SEC period-end dates for all annual metrics.
+    # Individual metrics are not guaranteed to have a fact for every year, so
+    # their values must be looked up by period end rather than by list index.
+    for field, tags in FLOW_FACTS.items():
+        units = ("USD/shares",) if field == "diluted_eps_ttm" else ("USD",)
+        annual_field = field[:-4]
+        history = selected_annual_fact_history(company_facts, tags, units)
+        annual_histories[annual_field] = history
+        for annual_entry in history:
+            period_end = parse_date(annual_entry.get("end"))
+            if period_end:
+                annual_periods.add(period_end)
+
+    ordered_periods = sorted(annual_periods, reverse=True)[:HISTORY_SLOTS]
+    annual_slots: list[dict[str, Any]] = [
+        {
+            "period_end": period_end.isoformat(),
+            "filing_date": "",
+        }
+        for period_end in ordered_periods
+    ]
+    annual_slots.extend(
+        {"period_end": "", "filing_date": ""}
+        for _ in range(HISTORY_SLOTS - len(annual_slots))
+    )
 
     for field, tags in FLOW_FACTS.items():
         units = ("USD/shares",) if field == "diluted_eps_ttm" else ("USD",)
@@ -493,6 +620,28 @@ def build_financials(company_facts: dict[str, Any]) -> dict[str, Any]:
         values[field] = value if value is not None else ""
         if entry:
             evidence.append(entry)
+
+        annual_field = field[:-4]
+        entries_by_period_end = {
+            period_end: annual_entry
+            for annual_entry in annual_histories[annual_field]
+            if (period_end := parse_date(annual_entry.get("end")))
+        }
+        for slot, period_end in enumerate(ordered_periods):
+            annual_entry = entries_by_period_end.get(period_end)
+            if not annual_entry:
+                continue
+            annual_value = as_float(annual_entry.get("val"))
+            if annual_field == "capital_expenditures" and annual_value is not None:
+                annual_value = abs(annual_value)
+            annual_slots[slot][annual_field] = (
+                annual_value if annual_value is not None else ""
+            )
+            filing_date = parse_date(annual_entry.get("filed"))
+            if filing_date:
+                current_filing_date = parse_date(annual_slots[slot]["filing_date"])
+                if not current_filing_date or filing_date > current_filing_date:
+                    annual_slots[slot]["filing_date"] = filing_date.isoformat()
 
     for field, tags in INSTANT_FACTS.items():
         taxonomy = "dei" if field == "shares_outstanding" else "us-gaap"
@@ -553,6 +702,24 @@ def build_financials(company_facts: dict[str, Any]) -> dict[str, Any]:
         values["free_cash_flow_ttm"] = operating_cash_flow - capex
     else:
         values["free_cash_flow_ttm"] = ""
+
+    for slot, annual_values in enumerate(annual_slots):
+        annual_op_cash_flow = as_float(annual_values.get("operating_cash_flow"))
+        annual_capex = as_float(annual_values.get("capital_expenditures"))
+        if annual_op_cash_flow is not None and annual_capex is not None:
+            annual_values["free_cash_flow"] = annual_op_cash_flow - annual_capex
+        values[f"annual_period_end_{slot}"] = annual_values.get("period_end", "")
+        values[f"annual_filing_date_{slot}"] = annual_values.get("filing_date", "")
+        for metric in (
+            "revenue",
+            "operating_income",
+            "net_income",
+            "operating_cash_flow",
+            "capital_expenditures",
+            "free_cash_flow",
+            "diluted_eps",
+        ):
+            values[f"{metric}_fy{slot}"] = annual_values.get(metric, "")
 
     evidence_dates = [
         (parse_date(entry.get("filed")), parse_date(entry.get("end")))
