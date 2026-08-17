@@ -60,6 +60,38 @@ The page should show relevant weekly context, such as:
 
 These figures should only be displayed once they are calculated from real data. Placeholder values should be clearly marked as illustrative.
 
+## Price snapshot
+
+Approximate weekly valuation prices come from clean daily bars published by
+[HF Data Library](https://hfdatalibrary.com/pages/data). Recent bars are based
+on trades executed on IEX and can differ from the official consolidated close.
+
+Register for a free HF Data Library API key and keep it outside the repository:
+
+```sh
+python3 -m pip install -r requirements.txt
+export HF_DATA_API_KEY="your-key"
+python3 scripts/update_prices.py
+```
+
+For a small smoke test, process only the first five universe rows:
+
+```sh
+python3 scripts/update_prices.py --limit 5 --output /tmp/latest_prices.csv
+```
+
+The script atomically overwrites `data/latest_prices.csv`. It retains one row
+per universe security, calculates `valuation_price` as the median of up to five
+recent daily closes, and marks unusable rows as `excluded` with a reason. A
+price requires at least three observations in the trailing 10 calendar days,
+and its newest observation must be no more than seven calendar days old.
+
+Publications and derived work using this snapshot must credit HF Data Library
+under CC BY 4.0 and include the required IEX attribution:
+
+> Data provided for free by IEX. By accessing or using IEX Historical Data,
+> you agree to the IEX Historical Data Terms of Use.
+
 ## Company row expansion
 
 Selecting a company row opens a full-width research panel. The expanded view should prioritize explanation over raw data.
