@@ -92,6 +92,30 @@ under CC BY 4.0 and include the required IEX attribution:
 > Data provided for free by IEX. By accessing or using IEX Historical Data,
 > you agree to the IEX Historical Data Terms of Use.
 
+## Valuation screen
+
+After refreshing the SEC and price snapshots, build the joined valuation table:
+
+```sh
+python3 scripts/build_screen.py
+```
+
+The script atomically overwrites `data/latest_screen.csv` and retains one row
+per universe security. It calculates market capitalization, enterprise value,
+earnings and FCF yields, valuation multiples, operating margin, annualized
+revenue growth across the five fiscal-year slots, positive FCF years, and
+five-year-window median FCF and net income.
+
+Missing inputs are never treated as zero. Negative earnings and FCF remain
+visible through negative yields, while P/E, price-to-FCF, and other multiples
+with non-positive denominators are left blank. `calculation_status` is `ok`
+only when all requested metrics are available; `partial` rows retain warnings
+for review, and companies without usable prices are `excluded`.
+
+Market capitalization is approximate because SEC shares outstanding can lag
+the price date or represent complex share classes imperfectly. The source
+values, dates, URLs, status, and warnings remain in each row for auditing.
+
 ## Company row expansion
 
 Selecting a company row opens a full-width research panel. The expanded view should prioritize explanation over raw data.
