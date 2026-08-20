@@ -116,6 +116,68 @@ Market capitalization is approximate because SEC shares outstanding can lag
 the price date or represent complex share classes imperfectly. The source
 values, dates, URLs, status, and warnings remain in each row for auditing.
 
+## Weekly research shortlist
+
+Build the ranked weekly shortlist after refreshing `data/latest_screen.csv`:
+
+```sh
+python3 scripts/rank_companies.py
+```
+
+The script atomically overwrites `data/latest_top10.csv`. Eligible companies
+must have a complete valuation screen, positive five-year-window median FCF
+and net income, and positive FCF in at least four reported fiscal years.
+Financials and real estate are excluded because this general-purpose model
+does not yet include their sector-specific valuation measures. Duplicate CIKs
+are removed and no more than two selected companies may come from one sector.
+
+The 0-100 attractiveness score uses these disclosed weights:
+
+- Free-cash-flow yield: 25%
+- Earnings yield: 20%
+- EV/operating income: 15%
+- Operating margin: 10%
+- Five-year annualized revenue growth: 10%
+- Positive-FCF consistency: 10%
+- Net debt/FCF: 10%
+
+Valuation and operating-margin percentiles are calculated within sectors when
+at least five eligible companies are available; smaller sectors use the global
+eligible-company distribution. The CSV includes every component score, the
+three largest positive score contributors, review flags for extreme yields,
+and source URLs for auditability. Review flags do not automatically exclude a
+company; they identify inputs or unusual events that should be checked before
+publication.
+
+This is a mechanical research screen, not a fair-value estimate or investment
+recommendation. It can surface cyclical peaks, one-off cash flows, stale SEC
+share counts, or companies whose risks are not represented by these metrics.
+Each selected company still requires qualitative research and a review of its
+latest filings before publication.
+
+## Research notes
+
+Translate the ranked metrics into deterministic, human-readable notes:
+
+```sh
+python3 scripts/build_research_notes.py
+```
+
+The script atomically overwrites `data/latest_research.csv`. Each row contains
+separate explanations for selection, valuation, business quality, historical
+growth, balance-sheet leverage, numerical warnings, and items to verify in the
+latest 10-K or 10-Q. The prose is generated entirely from disclosed rules and
+the values in `data/latest_top10.csv` and `data/latest_screen.csv`; it does not
+invent news, management assessments, or company-specific qualitative risks.
+
+`priority_review` identifies companies with numerical anomalies such as
+extreme yields, TTM results far above five-year medians, elevated leverage, or
+negative historical revenue growth. It also flags unusually low reported debt
+relative to equity because SEC XBRL tag coverage can omit material borrowings
+or leases. `standard_review` means no threshold was crossed, not that manual
+research can be skipped. Every company must still receive a filing and
+qualitative-risk review before public presentation.
+
 ## Company row expansion
 
 Selecting a company row opens a full-width research panel. The expanded view should prioritize explanation over raw data.
