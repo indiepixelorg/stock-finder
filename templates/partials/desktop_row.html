@@ -1,0 +1,20 @@
+            <tr class="company-row">
+              <td class="rank-cell">#${rank}</td>
+              <td>
+                <strong class="company-name">${name}</strong>
+                <span class="company-sector">${subsector}</span>
+              </td>
+              <td class="numeric">${price}</td>
+              <td><span class="score score-${attractiveness_tone}">${attractiveness_display} <small>${attractiveness_label}</small></span></td>
+              <td><span class="score score-${quality_tone}">${quality_display} <small>${quality_label}</small></span></td>
+              <td class="expand-cell">
+                <button class="expand-button" type="button" aria-expanded="false" aria-controls="desktop-analysis-${ticker_slug}" data-expand-target="desktop-analysis-${ticker_slug}" aria-label="Show analysis for ${name}">
+                  <span aria-hidden="true"></span>
+                </button>
+              </td>
+            </tr>
+            <tr class="analysis-row" id="desktop-analysis-${ticker_slug}" hidden>
+              <td colspan="6">
+                ${analysis_content}
+              </td>
+            </tr>

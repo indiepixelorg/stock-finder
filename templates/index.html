@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A transparent weekly shortlist of S&amp;P 500 companies worth researching further.">
+  <title>Value Stock Weekly — ${company_count} companies worth researching</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Value Stock Weekly home">Value Stock Weekly</a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="#methodology">Methodology</a>
+        <a href="#" data-coming-soon="Archive">Archive</a>
+        <a href="mailto:indiepixelorg@outlook.com">Contact</a>
+        <a href="#" data-coming-soon="About">About</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <div class="mobile-menu-header">
+      <a class="brand" href="#top">Value Stock Weekly</a>
+      <button class="menu-close" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <nav aria-label="Mobile navigation">
+      <a href="#methodology">Methodology</a>
+      <a href="#" data-coming-soon="Archive">Archive</a>
+      <a href="mailto:indiepixelorg@outlook.com">Contact</a>
+      <a href="#" data-coming-soon="About">About</a>
+    </nav>
+  </div>
+
+  <main id="top">
+    <section class="hero page-width" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">${company_count} S&amp;P 500 Companies Worth Researching This Week</h1>
+        <p>Companies ranking attractively on valuation, profitability, growth and cash-flow consistency.</p>
+      </div>
+      <div class="edition-meta">
+        <strong>Weekly edition</strong>
+        <time datetime="${published_iso}">${published_display}</time>
+      </div>
+    </section>
+
+    <section class="shortlist page-width" aria-labelledby="shortlist-title">
+      <h2 class="sr-only" id="shortlist-title">Weekly research shortlist</h2>
+      <div class="desktop-table-wrap">
+        <table>
+          <caption class="sr-only">Ranked weekly shortlist with price, Attractiveness, Quality and expandable research notes</caption>
+          <thead>
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col">Company</th>
+              <th scope="col">Price</th>
+              <th scope="col">Attractiveness</th>
+              <th scope="col">Quality</th>
+              <th scope="col"><span class="sr-only">Analysis</span></th>
+            </tr>
+          </thead>
+          <tbody>
+${desktop_rows}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mobile-cards">
+${mobile_cards}
+      </div>
+
+      <div class="methodology-note" id="methodology">
+        <span class="info-icon" aria-hidden="true">i</span>
+        <p><strong>Methodology note:</strong> Rankings use historical financial results and approximate weekly prices. They are research signals, not fair-value estimates or investment recommendations. <a href="#" data-coming-soon="The full methodology page">Read more about the methodology.</a></p>
+      </div>
+    </section>
+
+    <section class="newsletter page-width" id="newsletter" aria-labelledby="newsletter-title">
+      <div class="newsletter-card">
+        <span class="beta-pill">Free beta</span>
+        <h2 id="newsletter-title">Get the weekly S&amp;P 500 value shortlist</h2>
+        <p>Receive 10 companies worth researching each Monday, with quantitative explanations and filing-review prompts.</p>
+        <form id="newsletter-form">
+          <label class="sr-only" for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="Enter your email address" required>
+          <button type="submit">Get the weekly shortlist</button>
+          <p class="form-note">Email delivery is coming soon. This preview will not submit your address.</p>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner page-width">
+      <a class="brand" href="#top">Value Stock Weekly</a>
+      <nav aria-label="Footer navigation">
+        <a href="#methodology">Methodology</a>
+        <a href="#" data-coming-soon="Archive">Archive</a>
+        <a href="mailto:indiepixelorg@outlook.com">Contact</a>
+        <a href="#" data-coming-soon="Terms">Terms</a>
+        <a href="#" data-coming-soon="Privacy">Privacy</a>
+      </nav>
+      <p>&copy; ${publication_year} Value Stock Weekly. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

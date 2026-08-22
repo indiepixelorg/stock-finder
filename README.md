@@ -21,11 +21,10 @@ The current page is a single weekly dashboard containing:
 - A weekly edition heading and update date
 - A ranked table of 10 S&P 500 companies
 - Current share price
-- Valuation assessment from `Fair` to `Excellent`
+- Attractiveness assessment from `Fair` to `Excellent`
 - Business-quality assessment
-- Risk level
 - Expandable company rows for deeper analysis
-- A methodology note explaining that fair value is an estimate, not a short-term price target
+- A methodology note explaining the limits of the quantitative screen
 - A free-beta email signup for the weekly shortlist
 - Links to methodology, archive, contact, terms, and privacy pages
 
@@ -185,6 +184,32 @@ relative to equity because SEC XBRL tag coverage can omit material borrowings
 or leases. `standard_review` means no threshold was crossed, not that manual
 research can be skipped. Every company must still receive a filing and
 qualitative-risk review before public presentation.
+
+## Static site
+
+Generate the responsive GitHub Pages site after building the research notes:
+
+```sh
+python3 scripts/build_site.py
+```
+
+The script reads `data/latest_research.csv` and atomically generates
+`docs/index.html`, `docs/assets/styles.css`, `docs/assets/site.js`, and
+`docs/.nojekyll`. It requires exactly 10 uniquely ranked research rows and
+valid source links, so an incomplete shortlist cannot silently replace the
+existing page. The publication timestamp uses the current Europe/Ljubljana
+time truncated to the hour.
+
+The editable page structure lives in `templates/`, and the editable CSS and
+JavaScript live in `assets/`. The generated `docs/` directory can be published
+directly with GitHub Pages. The email form is intentionally a non-submitting
+preview, and unfinished navigation links display a `Coming soon` message.
+
+For a reproducible local build or automated test, provide an ISO-8601 time:
+
+```sh
+python3 scripts/build_site.py --published-at 2026-08-22T17:00:00+02:00
+```
 
 ## Company row expansion
 

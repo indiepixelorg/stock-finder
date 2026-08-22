@@ -1,0 +1,29 @@
+        <article class="company-card">
+          <div class="card-heading">
+            <div>
+              <h3>${name}</h3>
+              <p>${subsector}</p>
+            </div>
+            <span class="rank-badge">Rank #${rank}</span>
+          </div>
+          <dl class="card-metrics">
+            <div>
+              <dt>Attractiveness</dt>
+              <dd class="score score-${attractiveness_tone}">${attractiveness_display} <small>${attractiveness_label}</small></dd>
+            </div>
+            <div>
+              <dt>Quality</dt>
+              <dd class="score score-${quality_tone}">${quality_display} <small>${quality_label}</small></dd>
+            </div>
+            <div>
+              <dt>Current price</dt>
+              <dd class="numeric">${price}</dd>
+            </div>
+          </dl>
+          <button class="mobile-analysis-button" type="button" aria-expanded="false" aria-controls="mobile-analysis-${ticker_slug}" data-expand-target="mobile-analysis-${ticker_slug}">
+            View analysis <span aria-hidden="true">›</span>
+          </button>
+          <div class="mobile-analysis" id="mobile-analysis-${ticker_slug}" hidden>
+            ${analysis_content}
+          </div>
+        </article>

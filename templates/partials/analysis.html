@@ -1,0 +1,38 @@
+<div class="analysis-panel">
+  <div class="analysis-intro">
+    <span>${ticker}</span>
+    <h3>Why it made the shortlist</h3>
+    <p>${why_selected}</p>
+  </div>
+  <div class="analysis-grid">
+    <section>
+      <h4>Valuation signal</h4>
+      <p>${valuation_summary}</p>
+    </section>
+    <section>
+      <h4>Business quality</h4>
+      <p>${business_quality_summary}</p>
+    </section>
+    <section>
+      <h4>Historical growth</h4>
+      <p>${growth_summary}</p>
+    </section>
+    <section>
+      <h4>Balance sheet</h4>
+      <p>${balance_sheet_summary}</p>
+    </section>
+    <section class="analysis-wide ${review_class}">
+      <h4>Numerical review</h4>
+      <p>${warning_summary}</p>
+    </section>
+    <section class="analysis-wide">
+      <h4>What to verify</h4>
+      <p>${what_to_verify}</p>
+    </section>
+  </div>
+  <div class="source-links">
+    <span>Sources</span>
+    <a href="${snapshot_source_url}" target="_blank" rel="noopener noreferrer">SEC Company Facts</a>
+    <a href="${price_source_url}" target="_blank" rel="noopener noreferrer">HF Data Library</a>
+  </div>
+</div>
