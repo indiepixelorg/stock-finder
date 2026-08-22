@@ -41,6 +41,31 @@ def screen_row(
 
 
 class RankingUnitTests(unittest.TestCase):
+    def test_quality_score_uses_agreed_weights(self) -> None:
+        row: dict[str, object] = {
+            "operating_margin_score": 80,
+            "fcf_consistency_score": 100,
+            "revenue_growth_score": 60,
+        }
+
+        self.assertEqual(rank_companies.calculate_quality_score(row), 82)
+
+    def test_quality_labels_use_display_scale(self) -> None:
+        self.assertEqual(rank_companies.quality_label(8.5), "Strong")
+        self.assertEqual(rank_companies.quality_label(7.0), "Good")
+        self.assertEqual(rank_companies.quality_label(5.5), "Fair")
+        self.assertEqual(rank_companies.quality_label(5.4), "Weak")
+
+    def test_ranking_labels_the_rounded_display_score(self) -> None:
+        rows = [screen_row("A", value=2)]
+
+        ranked = rank_companies.rank_companies(rows, limit=1)
+
+        self.assertEqual(
+            ranked[0]["quality_label"],
+            rank_companies.quality_label(float(ranked[0]["quality_display_score"])),
+        )
+
     def test_percentiles_average_ties_and_respect_direction(self) -> None:
         rows = [{"metric": 1.0}, {"metric": 2.0}, {"metric": 2.0}, {"metric": 4.0}]
         high = rank_companies.percentile_scores(rows, "metric", True)
@@ -105,6 +130,8 @@ class RankingUnitTests(unittest.TestCase):
             2,
         )
         self.assertTrue(all(0 <= float(row["attractiveness_score"]) <= 100 for row in ranked))
+        self.assertTrue(all(0 <= float(row["quality_score"]) <= 100 for row in ranked))
+        self.assertTrue(all(row["quality_label"] in {"Strong", "Good", "Fair", "Weak"} for row in ranked))
 
     def test_extreme_yields_are_flagged_without_exclusion(self) -> None:
         row: dict[str, object] = screen_row("OUTLIER")

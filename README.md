@@ -141,6 +141,14 @@ The 0-100 attractiveness score uses these disclosed weights:
 - Positive-FCF consistency: 10%
 - Net debt/FCF: 10%
 
+The output also includes a separate quantitative quality score for display. It
+does not affect shortlist order and is calculated as 40% operating-margin
+percentile, 35% positive-FCF consistency, and 25% revenue-growth percentile.
+The stored score is 0-100 and the displayed score is 0-10. Display labels are
+`Strong` at 8.5 or higher, `Good` from 7.0, `Fair` from 5.5, and `Weak` below
+5.5. Leverage is deliberately excluded because SEC debt-tag coverage can be
+incomplete for some companies.
+
 Valuation and operating-margin percentiles are calculated within sectors when
 at least five eligible companies are available; smaller sectors use the global
 eligible-company distribution. The CSV includes every component score, the

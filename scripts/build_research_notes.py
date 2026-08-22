@@ -36,6 +36,9 @@ TOP_REQUIRED_FIELDS = {
     "valuation_price",
     "price_date",
     "attractiveness_score",
+    "quality_score",
+    "quality_display_score",
+    "quality_label",
     "free_cash_flow_yield",
     "free_cash_flow_yield_score",
     "earnings_yield",
@@ -78,6 +81,9 @@ OUTPUT_FIELDS = [
     "filing_date",
     "period_end",
     "attractiveness_score",
+    "quality_score",
+    "quality_display_score",
+    "quality_label",
     "why_selected",
     "valuation_summary",
     "business_quality_summary",
@@ -300,6 +306,8 @@ def build_note(top: dict[str, str], screen: dict[str, str]) -> dict[str, str]:
 
     margin_comparison = comparison_description(number(top, "operating_margin_score"))
     business_quality_summary = (
+        f"The quantitative quality score is "
+        f"{number(top, 'quality_display_score'):.1f}/10 ({top['quality_label']}). "
         f"Operating margin is {percent(operating_margin)}, {margin_comparison}. "
         f"Free cash flow was positive in {positive_fcf_years} of "
         f"{historical_fcf_years} reported fiscal years."
@@ -379,6 +387,9 @@ def build_note(top: dict[str, str], screen: dict[str, str]) -> dict[str, str]:
         "filing_date": screen["filing_date"].strip(),
         "period_end": screen["period_end"].strip(),
         "attractiveness_score": f"{number(top, 'attractiveness_score'):.2f}",
+        "quality_score": f"{number(top, 'quality_score'):.2f}",
+        "quality_display_score": f"{number(top, 'quality_display_score'):.1f}",
+        "quality_label": top["quality_label"].strip(),
         "why_selected": why_selected,
         "valuation_summary": valuation_summary,
         "business_quality_summary": business_quality_summary,

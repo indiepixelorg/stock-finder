@@ -21,6 +21,9 @@ def top_row(ticker: str = "TEST") -> dict[str, str]:
         "valuation_price": "100",
         "price_date": "2026-08-14",
         "attractiveness_score": "88.25",
+        "quality_score": "87.50",
+        "quality_display_score": "8.8",
+        "quality_label": "Strong",
         "free_cash_flow_yield": "0.09",
         "free_cash_flow_yield_score": "90",
         "earnings_yield": "0.06",
@@ -61,12 +64,16 @@ class ResearchNoteTests(unittest.TestCase):
         self.assertIn("88.25/100", note["why_selected"])
         self.assertIn("9.0% free-cash-flow yield", note["valuation_summary"])
         self.assertIn("Operating margin is 35.0%", note["business_quality_summary"])
+        self.assertIn("8.8/10 (Strong)", note["business_quality_summary"])
         self.assertIn("positive in 5 of 5", note["business_quality_summary"])
         self.assertIn("10.0% annually", note["growth_summary"])
         self.assertIn("more cash than debt", note["balance_sheet_summary"])
         self.assertIn("net cash equal to 0.5x", note["balance_sheet_summary"])
         self.assertEqual(note["review_status"], "standard_review")
         self.assertEqual(note["generation_method"], "deterministic_rules_v1")
+        self.assertEqual(note["quality_score"], "87.50")
+        self.assertEqual(note["quality_display_score"], "8.8")
+        self.assertEqual(note["quality_label"], "Strong")
 
     def test_flags_extreme_and_non_recurring_looking_results(self) -> None:
         top = top_row()

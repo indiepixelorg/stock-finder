@@ -32,6 +32,12 @@ MIN_POSITIVE_FCF_YEARS = 4
 MIN_SECTOR_SAMPLE = 5
 MAX_PER_SECTOR = 2
 
+QUALITY_WEIGHTS = {
+    "operating_margin_score": 0.40,
+    "fcf_consistency_score": 0.35,
+    "revenue_growth_score": 0.25,
+}
+
 METRICS = {
     "free_cash_flow_yield": (0.25, True, True),
     "earnings_yield": (0.20, True, True),
@@ -75,6 +81,9 @@ OUTPUT_FIELDS = [
     "valuation_price",
     "price_date",
     "attractiveness_score",
+    "quality_score",
+    "quality_display_score",
+    "quality_label",
     "free_cash_flow_yield",
     "free_cash_flow_yield_score",
     "earnings_yield",
@@ -266,6 +275,20 @@ def review_flags(row: dict[str, object]) -> str:
     return ";".join(flags)
 
 
+def calculate_quality_score(row: dict[str, object]) -> float:
+    return sum(float(row[field]) * weight for field, weight in QUALITY_WEIGHTS.items())
+
+
+def quality_label(display_score: float) -> str:
+    if display_score >= 8.5:
+        return "Strong"
+    if display_score >= 7.0:
+        return "Good"
+    if display_score >= 5.5:
+        return "Fair"
+    return "Weak"
+
+
 def rank_companies(rows: list[dict[str, str]], limit: int = 10) -> list[dict[str, str]]:
     if limit <= 0:
         raise RuntimeError("--limit must be greater than zero.")
@@ -292,6 +315,9 @@ def rank_companies(rows: list[dict[str, str]], limit: int = 10) -> list[dict[str
             float(row[SCORE_FIELDS[metric]]) * weight
             for metric, (weight, _, _) in METRICS.items()
         )
+        row["quality_score"] = calculate_quality_score(row)
+        row["quality_display_score"] = round(float(row["quality_score"]) / 10, 1)
+        row["quality_label"] = quality_label(float(row["quality_display_score"]))
 
     ordered = sorted(
         eligible,
@@ -329,6 +355,8 @@ def rank_companies(rows: list[dict[str, str]], limit: int = 10) -> list[dict[str
         rendered["rank"] = str(rank)
         rendered["name"] = rendered["name"].rstrip("|").strip()
         rendered["attractiveness_score"] = f"{float(row['attractiveness_score']):.2f}"
+        rendered["quality_score"] = f"{float(row['quality_score']):.2f}"
+        rendered["quality_display_score"] = f"{float(row['quality_display_score']):.1f}"
         for score_field in SCORE_FIELDS.values():
             rendered[score_field] = f"{float(row[score_field]):.2f}"
         rendered["positive_fcf_years"] = str(int(float(row["positive_fcf_years"])))
