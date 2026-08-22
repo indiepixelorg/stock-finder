@@ -211,6 +211,28 @@ For a reproducible local build or automated test, provide an ISO-8601 time:
 python3 scripts/build_site.py --published-at 2026-08-22T17:00:00+02:00
 ```
 
+### GitHub Pages automation
+
+`.github/workflows/deploy-pages.yml` builds and deploys the site whenever its
+source files are pushed to `main`. It also refreshes the complete data pipeline
+every Monday at 07:00 UTC and when manually started from the repository's
+Actions tab.
+
+Before the first scheduled or manual refresh, add `HF_DATA_API_KEY` under
+**Repository settings → Secrets and variables → Actions**. In GitHub Pages
+settings, choose **GitHub Actions** as the publishing source. Push-triggered
+deployments use the committed research data and do not require the secret.
+Scheduled and manual refreshes commit the updated CSV files and generated
+`docs/` site back to `main`, keeping the repository synchronized with the
+published page.
+
+Scheduled builds run these steps in order:
+
+```text
+update universe → update SEC snapshot → update prices → build screen
+→ rank companies → build research notes → build site → deploy Pages
+```
+
 ## Company row expansion
 
 Selecting a company row opens a full-width research panel. The expanded view should prioritize explanation over raw data.
