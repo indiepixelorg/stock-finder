@@ -215,8 +215,9 @@ npm run build:site
 ```
 
 The script reads `generated/data/latest_research.csv` and atomically generates
-`generated/site/index.html`, `generated/site/assets/styles.css`,
-and `generated/site/assets/site.js`. It requires exactly 10 uniquely ranked
+`generated/site/index.html`, `generated/site/assets/site.js`, and the locally
+hosted font files. CSS is inlined into `index.html` to avoid a render-blocking
+stylesheet request. The build requires exactly 10 uniquely ranked
 research rows and valid source links, so an incomplete shortlist cannot silently replace the
 existing page. The publication timestamp uses the current Europe/Ljubljana
 time truncated to the hour.
@@ -225,7 +226,9 @@ The editable page structure lives in `templates/`, and the editable CSS and
 JavaScript live in `assets/`. The generated `generated/site/` directory is
 uploaded directly to GitHub Pages. The email form is intentionally a
 non-submitting preview, and unfinished navigation links display a `Coming
-soon` message.
+soon` message. The page self-hosts Latin WOFF2 subsets of Playfair Display
+and Public Sans from `assets/fonts/`; their SIL Open Font License is stored
+alongside the font files.
 
 For a reproducible local build or automated test, provide an ISO-8601 time:
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -50,8 +50,21 @@ test("builds complete GitHub Pages output", (context) => {
   assert.equal(generated.match(/class="company-row"/g)?.length, 10);
   assert.equal(generated.match(/class="company-card"/g)?.length, 10);
   assert.doesNotMatch(generated, />Risk</);
-  assert.ok(readFileSync(join(output, "assets/styles.css"), "utf8"));
   assert.ok(readFileSync(join(output, "assets/site.js"), "utf8"));
+  assert.equal(existsSync(join(output, "assets/styles.css")), false);
+  assert.doesNotMatch(generated, /<link[^>]+rel="stylesheet"/);
+  assert.match(generated, /<style>[\s\S]*@font-face[\s\S]*<\/style>/);
+  assert.doesNotMatch(generated, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
+  assert.match(generated, /assets\/fonts\/playfair-display-latin\.woff2/);
+  assert.match(generated, /assets\/fonts\/public-sans-latin\.woff2/);
+  assert.match(generated, /\.form-note,[\s\S]*?color: var\(--muted\) !important;/);
+  assert.doesNotMatch(generated, /color: #737781/);
+  for (const file of site.FONT_FILES) {
+    assert.deepEqual(
+      readFileSync(join(output, "assets/fonts", file)),
+      readFileSync(join(PROJECT_DIR, "assets/fonts", file)),
+    );
+  }
 });
 
 test("escapes research content", (context) => {

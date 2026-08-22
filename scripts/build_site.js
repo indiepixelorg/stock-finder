@@ -8,6 +8,11 @@ import { finiteNumber, isMain, projectDirectory } from "./lib/runtime.js";
 
 export const TIME_ZONE = "Europe/Ljubljana";
 export const EXPECTED_COMPANIES = 10;
+export const FONT_FILES = [
+  "playfair-display-latin.woff2",
+  "public-sans-latin.woff2",
+  "OFL.txt",
+];
 export const REQUIRED_FIELDS = new Set([
   "rank", "ticker", "name", "sector", "subsector", "valuation_price", "price_date",
   "attractiveness_score", "quality_display_score", "quality_label", "why_selected",
@@ -229,7 +234,7 @@ export function substitute(template, values) {
   });
 }
 
-export function renderSite(rows, templatesDirectory, published) {
+export function renderSite(rows, templatesDirectory, published, styles) {
   const page = loadTemplate(resolve(templatesDirectory, "index.html"));
   const desktopRow = loadTemplate(resolve(templatesDirectory, "partials/desktop_row.html"));
   const mobileCard = loadTemplate(resolve(templatesDirectory, "partials/mobile_card.html"));
@@ -245,25 +250,31 @@ export function renderSite(rows, templatesDirectory, published) {
   return substitute(page, {
     company_count: String(rows.length), desktop_rows: desktopParts.join("\n"),
     mobile_cards: mobileParts.join("\n"), published_iso: published.iso,
-    published_display: published.display, publication_year: published.year,
+    published_display: published.display, publication_year: published.year, styles,
   });
 }
 
 export function build(args) {
   const rows = loadRows(args.input);
   const published = publicationTime(args.publishedAt);
-  const rendered = renderSite(rows, args.templates, published);
   let styles;
   let script;
+  const fonts = new Map();
   try {
     styles = readFileSync(resolve(args.assets, "styles.css"), "utf8");
     script = readFileSync(resolve(args.assets, "site.js"), "utf8");
+    for (const file of FONT_FILES) {
+      fonts.set(file, readFileSync(resolve(args.assets, "fonts", file)));
+    }
   } catch (error) {
     throw new Error(`Cannot read site assets from ${args.assets}`, { cause: error });
   }
+  const rendered = renderSite(rows, args.templates, published, styles);
   atomicWrite(resolve(args.output, "index.html"), rendered);
-  atomicWrite(resolve(args.output, "assets/styles.css"), styles);
   atomicWrite(resolve(args.output, "assets/site.js"), script);
+  for (const [file, contents] of fonts) {
+    atomicWrite(resolve(args.output, "assets/fonts", file), contents);
+  }
   console.log(`Wrote ${resolve(args.output, "index.html")} with ${rows.length} companies (published ${published.iso}).`);
 }
 
