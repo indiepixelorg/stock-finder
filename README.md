@@ -68,15 +68,19 @@ on trades executed on IEX and can differ from the official consolidated close.
 Register for a free HF Data Library API key and keep it outside the repository:
 
 ```sh
-python3 -m pip install -r requirements.txt
+npm install
 export HF_DATA_API_KEY="your-key"
-python3 scripts/update_prices.py
+npm run update:prices
 ```
+
+The pipeline requires Node.js 20.19 or newer (Node.js 22 is used in CI). It
+reads HF Data Library's Parquet response with a pure-JavaScript reader, so no
+native module or Python dependency is required.
 
 For a small smoke test, process only the first five universe rows:
 
 ```sh
-python3 scripts/update_prices.py --limit 5 --output /tmp/latest_prices.csv
+npm run update:prices -- --limit 5 --output /tmp/latest_prices.csv
 ```
 
 The script atomically overwrites `generated/data/latest_prices.csv`. It retains one row
@@ -96,7 +100,7 @@ under CC BY 4.0 and include the required IEX attribution:
 After refreshing the SEC and price snapshots, build the joined valuation table:
 
 ```sh
-python3 scripts/build_screen.py
+npm run build:screen
 ```
 
 The script atomically overwrites `generated/data/latest_screen.csv` and retains one row
@@ -120,7 +124,7 @@ values, dates, URLs, status, and warnings remain in each row for auditing.
 Build the ranked weekly shortlist after refreshing `generated/data/latest_screen.csv`:
 
 ```sh
-python3 scripts/rank_companies.py
+npm run rank
 ```
 
 The script atomically overwrites `generated/data/latest_top10.csv`. Eligible companies
@@ -167,7 +171,7 @@ latest filings before publication.
 Translate the ranked metrics into deterministic, human-readable notes:
 
 ```sh
-python3 scripts/build_research_notes.py
+npm run build:research
 ```
 
 The script atomically overwrites `generated/data/latest_research.csv`. Each row contains
@@ -191,7 +195,7 @@ Run the complete data-to-site workflow with one command:
 
 ```sh
 export HF_DATA_API_KEY="your-key"
-python3 scripts/run_pipeline.py
+npm run pipeline
 ```
 
 The command updates the S&P 500 universe, SEC financial snapshot, weekly
@@ -207,7 +211,7 @@ rebuilt or debugged.
 Generate the responsive GitHub Pages site after building the research notes:
 
 ```sh
-python3 scripts/build_site.py
+npm run build:site
 ```
 
 The script reads `generated/data/latest_research.csv` and atomically generates
@@ -226,7 +230,7 @@ soon` message.
 For a reproducible local build or automated test, provide an ISO-8601 time:
 
 ```sh
-python3 scripts/build_site.py --published-at 2026-08-22T17:00:00+02:00
+npm run build:site -- --published-at 2026-08-22T17:00:00+02:00
 ```
 
 ### GitHub Pages automation

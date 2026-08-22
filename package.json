@@ -1,0 +1,28 @@
+{
+  "name": "value-stock-weekly",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A weekly, auditable value-stock research pipeline and static site.",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "test": "node --test",
+    "pipeline": "node scripts/run_pipeline.js",
+    "update:universe": "node scripts/update_universe.js",
+    "update:snapshot": "node scripts/update_snapshot.js",
+    "update:prices": "node scripts/update_prices.js",
+    "build:screen": "node scripts/build_screen.js",
+    "rank": "node scripts/rank_companies.js",
+    "build:research": "node scripts/build_research_notes.js",
+    "build:site": "node scripts/build_site.js"
+  },
+  "dependencies": {
+    "hyparquet": "^1.29.1",
+    "hyparquet-compressors": "^1.1.1"
+  },
+  "devDependencies": {
+    "hyparquet-writer": "^0.16.6"
+  }
+}
