@@ -31,23 +31,10 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
-      - name: Refresh universe and financial data
+      - name: Generate weekly site
         env:
           HF_DATA_API_KEY: ${{ secrets.HF_DATA_API_KEY }}
-        run: |
-          if [ -z "$HF_DATA_API_KEY" ]; then
-            echo "::error::Add HF_DATA_API_KEY as a repository Actions secret before running a scheduled or manual refresh."
-            exit 1
-          fi
-          python scripts/update_universe.py
-          python scripts/update_snapshot.py
-          python scripts/update_prices.py
-          python scripts/build_screen.py
-          python scripts/rank_companies.py
-          python scripts/build_research_notes.py
-
-      - name: Build static site
-        run: python scripts/build_site.py
+        run: python scripts/run_pipeline.py
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

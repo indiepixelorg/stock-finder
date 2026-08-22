@@ -185,6 +185,23 @@ or leases. `standard_review` means no threshold was crossed, not that manual
 research can be skipped. Every company must still receive a filing and
 qualitative-risk review before public presentation.
 
+## Complete local pipeline
+
+Run the complete data-to-site workflow with one command:
+
+```sh
+export HF_DATA_API_KEY="your-key"
+python3 scripts/run_pipeline.py
+```
+
+The command updates the S&P 500 universe, SEC financial snapshot, weekly
+prices, valuation screen, ranked shortlist, research notes, and static site in
+that order. It stops immediately when a stage fails. Successful output is
+written below `generated/`, with the deployable page in `generated/site/`.
+
+The individual scripts remain available when only one stage needs to be
+rebuilt or debugged.
+
 ## Static site
 
 Generate the responsive GitHub Pages site after building the research notes:
