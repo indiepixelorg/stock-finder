@@ -135,20 +135,20 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--top10",
         type=Path,
-        default=project_dir / "data" / "latest_top10.csv",
-        help="Ranked shortlist CSV (default: ./data/latest_top10.csv).",
+        default=project_dir / "generated" / "data" / "latest_top10.csv",
+        help="Ranked shortlist CSV (default: ./generated/data/latest_top10.csv).",
     )
     parser.add_argument(
         "--screen",
         type=Path,
-        default=project_dir / "data" / "latest_screen.csv",
-        help="Valuation screen CSV (default: ./data/latest_screen.csv).",
+        default=project_dir / "generated" / "data" / "latest_screen.csv",
+        help="Valuation screen CSV (default: ./generated/data/latest_screen.csv).",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_dir / "data" / "latest_research.csv",
-        help="Output CSV (default: ./data/latest_research.csv).",
+        default=project_dir / "generated" / "data" / "latest_research.csv",
+        help="Output CSV (default: ./generated/data/latest_research.csv).",
     )
     return parser.parse_args(argv)
 

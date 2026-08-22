@@ -2,7 +2,7 @@
 
 """Build the static Value Stock Weekly site from latest_research.csv.
 
-The generated ``docs`` directory can be published directly with GitHub Pages.
+The generated ``generated/site`` directory can be published with GitHub Pages.
 HTML lives in editable templates, while this script validates and formats the
 data. Only the Python standard library is required.
 """
@@ -56,8 +56,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--input",
         type=Path,
-        default=project_dir / "data" / "latest_research.csv",
-        help="Research CSV (default: ./data/latest_research.csv).",
+        default=project_dir / "generated" / "data" / "latest_research.csv",
+        help="Research CSV (default: ./generated/data/latest_research.csv).",
     )
     parser.add_argument(
         "--templates",
@@ -74,8 +74,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_dir / "docs",
-        help="GitHub Pages output directory (default: ./docs).",
+        default=project_dir / "generated" / "site",
+        help="GitHub Pages output directory (default: ./generated/site).",
     )
     parser.add_argument(
         "--published-at",
@@ -293,7 +293,6 @@ def build(args: argparse.Namespace) -> None:
     atomic_write(args.output / "index.html", rendered)
     atomic_write(args.output / "assets" / "styles.css", styles)
     atomic_write(args.output / "assets" / "site.js", script)
-    atomic_write(args.output / ".nojekyll", "")
     print(
         f"Wrote {args.output / 'index.html'} with {len(rows)} companies "
         f"(published {published.isoformat()})."

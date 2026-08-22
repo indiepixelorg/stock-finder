@@ -34,7 +34,7 @@ The visual direction is calm and editorial: dark navy typography, a light backgr
 
 Each edition should make the selection process visible and explainable:
 
-The `universe.csv` input is sourced from the [S&P 500 Companies dataset](https://github.com/datasets/s-and-p-500-companies/tree/main).
+The generated `generated/universe.csv` input is sourced from the [S&P 500 Companies dataset](https://github.com/datasets/s-and-p-500-companies/tree/main).
 
 ```text
 S&P 500 universe
@@ -79,7 +79,7 @@ For a small smoke test, process only the first five universe rows:
 python3 scripts/update_prices.py --limit 5 --output /tmp/latest_prices.csv
 ```
 
-The script atomically overwrites `data/latest_prices.csv`. It retains one row
+The script atomically overwrites `generated/data/latest_prices.csv`. It retains one row
 per universe security, calculates `valuation_price` as the median of up to five
 recent daily closes, and marks unusable rows as `excluded` with a reason. A
 price requires at least three observations in the trailing 10 calendar days,
@@ -99,7 +99,7 @@ After refreshing the SEC and price snapshots, build the joined valuation table:
 python3 scripts/build_screen.py
 ```
 
-The script atomically overwrites `data/latest_screen.csv` and retains one row
+The script atomically overwrites `generated/data/latest_screen.csv` and retains one row
 per universe security. It calculates market capitalization, enterprise value,
 earnings and FCF yields, valuation multiples, operating margin, annualized
 revenue growth across the five fiscal-year slots, positive FCF years, and
@@ -117,13 +117,13 @@ values, dates, URLs, status, and warnings remain in each row for auditing.
 
 ## Weekly research shortlist
 
-Build the ranked weekly shortlist after refreshing `data/latest_screen.csv`:
+Build the ranked weekly shortlist after refreshing `generated/data/latest_screen.csv`:
 
 ```sh
 python3 scripts/rank_companies.py
 ```
 
-The script atomically overwrites `data/latest_top10.csv`. Eligible companies
+The script atomically overwrites `generated/data/latest_top10.csv`. Eligible companies
 must have a complete valuation screen, positive five-year-window median FCF
 and net income, and positive FCF in at least four reported fiscal years.
 Financials and real estate are excluded because this general-purpose model
@@ -170,11 +170,11 @@ Translate the ranked metrics into deterministic, human-readable notes:
 python3 scripts/build_research_notes.py
 ```
 
-The script atomically overwrites `data/latest_research.csv`. Each row contains
+The script atomically overwrites `generated/data/latest_research.csv`. Each row contains
 separate explanations for selection, valuation, business quality, historical
 growth, balance-sheet leverage, numerical warnings, and items to verify in the
 latest 10-K or 10-Q. The prose is generated entirely from disclosed rules and
-the values in `data/latest_top10.csv` and `data/latest_screen.csv`; it does not
+the values in `generated/data/latest_top10.csv` and `generated/data/latest_screen.csv`; it does not
 invent news, management assessments, or company-specific qualitative risks.
 
 `priority_review` identifies companies with numerical anomalies such as
@@ -193,17 +193,18 @@ Generate the responsive GitHub Pages site after building the research notes:
 python3 scripts/build_site.py
 ```
 
-The script reads `data/latest_research.csv` and atomically generates
-`docs/index.html`, `docs/assets/styles.css`, `docs/assets/site.js`, and
-`docs/.nojekyll`. It requires exactly 10 uniquely ranked research rows and
-valid source links, so an incomplete shortlist cannot silently replace the
+The script reads `generated/data/latest_research.csv` and atomically generates
+`generated/site/index.html`, `generated/site/assets/styles.css`,
+and `generated/site/assets/site.js`. It requires exactly 10 uniquely ranked
+research rows and valid source links, so an incomplete shortlist cannot silently replace the
 existing page. The publication timestamp uses the current Europe/Ljubljana
 time truncated to the hour.
 
 The editable page structure lives in `templates/`, and the editable CSS and
-JavaScript live in `assets/`. The generated `docs/` directory can be published
-directly with GitHub Pages. The email form is intentionally a non-submitting
-preview, and unfinished navigation links display a `Coming soon` message.
+JavaScript live in `assets/`. The generated `generated/site/` directory is
+uploaded directly to GitHub Pages. The email form is intentionally a
+non-submitting preview, and unfinished navigation links display a `Coming
+soon` message.
 
 For a reproducible local build or automated test, provide an ISO-8601 time:
 
@@ -213,24 +214,25 @@ python3 scripts/build_site.py --published-at 2026-08-22T17:00:00+02:00
 
 ### GitHub Pages automation
 
-`.github/workflows/deploy-pages.yml` builds and deploys the site whenever its
-source files are pushed to `main`. It also refreshes the complete data pipeline
-every Monday at 07:00 UTC and when manually started from the repository's
-Actions tab.
+`.github/workflows/tests.yml` runs the complete test suite on every push and
+pull request. `.github/workflows/deploy-pages.yml` separately refreshes the
+complete data pipeline, builds the site, and deploys it every Monday at 07:00
+UTC or when manually started from the repository's Actions tab.
 
-Before the first scheduled or manual refresh, add `HF_DATA_API_KEY` under
+Before the first run, add `HF_DATA_API_KEY` under
 **Repository settings → Secrets and variables → Actions**. In GitHub Pages
-settings, choose **GitHub Actions** as the publishing source. Push-triggered
-deployments use the committed research data and do not require the secret.
-Scheduled and manual refreshes commit the updated CSV files and generated
-`docs/` site back to `main`, keeping the repository synchronized with the
-published page.
+settings, choose **GitHub Actions** as the publishing source. All generated
+files are written below `generated/`, uploaded as the Pages artifact, and
+intentionally excluded from Git.
 
-Scheduled builds run these steps in order:
+The workflows run these steps in order:
 
 ```text
-update universe → update SEC snapshot → update prices → build screen
-→ rank companies → build research notes → build site → deploy Pages
+push or pull request → run tests
+
+Monday or manual deployment → update universe → update SEC snapshot
+→ update prices → build screen → rank companies → build research notes
+→ build site → deploy Pages
 ```
 
 ## Company row expansion

@@ -81,7 +81,6 @@ class BuildSiteTests(unittest.TestCase):
             self.assertNotIn(">Risk<", generated)
             self.assertTrue((output / "assets" / "styles.css").is_file())
             self.assertTrue((output / "assets" / "site.js").is_file())
-            self.assertTrue((output / ".nojekyll").is_file())
 
     def test_escapes_research_content(self):
         with tempfile.TemporaryDirectory() as directory:

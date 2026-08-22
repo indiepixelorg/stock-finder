@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Build data/latest_prices.csv from HF Data Library daily bars.
+"""Build generated/data/latest_prices.csv from HF Data Library daily bars.
 
 Every security from universe.csv is retained in the output. Securities without
 usable prices are marked as excluded with a machine-readable reason. For usable
@@ -83,14 +83,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--universe",
         type=Path,
-        default=project_dir / "universe.csv",
-        help="Input universe CSV (default: ./universe.csv).",
+        default=project_dir / "generated" / "universe.csv",
+        help="Input universe CSV (default: ./generated/universe.csv).",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_dir / "data" / "latest_prices.csv",
-        help="Output CSV (default: ./data/latest_prices.csv).",
+        default=project_dir / "generated" / "data" / "latest_prices.csv",
+        help="Output CSV (default: ./generated/data/latest_prices.csv).",
     )
     parser.add_argument(
         "--limit",

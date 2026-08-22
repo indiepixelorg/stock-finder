@@ -1,2 +1,5 @@
 __pycache__/
 *.py[cod]
+
+# All generated data and deployable site output
+/generated/

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Download the current S&P 500 constituents and overwrite universe.csv.
+"""Download the current S&P 500 constituents into generated/universe.csv.
 
 The source is the public ``constituents.csv`` file from the datasets GitHub
 repository, so no API key is needed:
@@ -158,8 +158,8 @@ def parse_args() -> argparse.Namespace:
         "output",
         nargs="?",
         type=Path,
-        default=project_dir / "universe.csv",
-        help="Output CSV path (default: ./universe.csv).",
+        default=project_dir / "generated" / "universe.csv",
+        help="Output CSV path (default: ./generated/universe.csv).",
     )
     return parser.parse_args()
 

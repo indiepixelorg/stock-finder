@@ -96,26 +96,26 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--universe",
         type=Path,
-        default=project_dir / "universe.csv",
-        help="Universe CSV (default: ./universe.csv).",
+        default=project_dir / "generated" / "universe.csv",
+        help="Universe CSV (default: ./generated/universe.csv).",
     )
     parser.add_argument(
         "--snapshot",
         type=Path,
-        default=project_dir / "data" / "latest_snapshot.csv",
-        help="SEC snapshot CSV (default: ./data/latest_snapshot.csv).",
+        default=project_dir / "generated" / "data" / "latest_snapshot.csv",
+        help="SEC snapshot CSV (default: ./generated/data/latest_snapshot.csv).",
     )
     parser.add_argument(
         "--prices",
         type=Path,
-        default=project_dir / "data" / "latest_prices.csv",
-        help="Price snapshot CSV (default: ./data/latest_prices.csv).",
+        default=project_dir / "generated" / "data" / "latest_prices.csv",
+        help="Price snapshot CSV (default: ./generated/data/latest_prices.csv).",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_dir / "data" / "latest_screen.csv",
-        help="Output CSV (default: ./data/latest_screen.csv).",
+        default=project_dir / "generated" / "data" / "latest_screen.csv",
+        help="Output CSV (default: ./generated/data/latest_screen.csv).",
     )
     return parser.parse_args(argv)
 

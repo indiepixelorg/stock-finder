@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Build data/latest_snapshot.csv from SEC Company Facts.
+"""Build generated/data/latest_snapshot.csv from SEC Company Facts.
 
 The script keeps one output row per security in universe.csv. Financial values
 come from the SEC's standard XBRL Company Facts API; TTM flow values are
@@ -156,14 +156,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--universe",
         type=Path,
-        default=project_dir / "universe.csv",
-        help="Input universe CSV (default: ./universe.csv).",
+        default=project_dir / "generated" / "universe.csv",
+        help="Input universe CSV (default: ./generated/universe.csv).",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_dir / "data" / "latest_snapshot.csv",
-        help="Output CSV (default: ./data/latest_snapshot.csv).",
+        default=project_dir / "generated" / "data" / "latest_snapshot.csv",
+        help="Output CSV (default: ./generated/data/latest_snapshot.csv).",
     )
     parser.add_argument(
         "--limit",
